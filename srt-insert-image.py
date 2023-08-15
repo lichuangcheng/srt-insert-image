@@ -52,37 +52,7 @@ def validate_srt_path(path):
         raise argparse.ArgumentTypeError("Invalid SRT file format: only SRT files are supported")
     return path
 
-def main():
-    parser = argparse.ArgumentParser(description="Image Processing Script")
-    parser.add_argument("image_path", type=validate_image_path, help="path to the input PNG image")
-    parser.add_argument("srt_path", type=validate_srt_path, help="path to the input SRT file")
-    parser.add_argument("position_height", type=int, help="position height")
-    parser.add_argument("-o", "--output", default="out.png", help="output image path (default: out.png)")
-    parser.add_argument("-s", "--scale", type=float, default=1.0, help="image scaling factor")
-    parser.add_argument("-b", "--background-size", nargs=2, type=int, default=[1920, 1080],
-                        metavar=("WIDTH", "HEIGHT"), help="background image size (default: 1920x1080)")
-    parser.add_argument('-t', '--timecode_strategy', default='end', choices=['start', 'end', 'middle'], 
-                    help='timecode strategy, must be "start", "end" or "middle", default is "end"')
-    args = parser.parse_args()
-
-    # 从命令行参数中获取值
-    image_path = args.image_path
-    position_height = args.position_height
-    srt_path = args.srt_path
-    output_path = args.output
-    scale_factor = args.scale
-    background_size = tuple(args.background_size)
-    timecode_strategy = args.timecode_strategy
-
-    # 在这里执行你的图像处理逻辑和 SRT 文件处理逻辑
-    print("Image Path:", image_path)
-    print("Position Height:", position_height)
-    print("SRT Path:", srt_path)
-    print("Output Path:", output_path)
-    print("Scale Factor:", scale_factor)
-    print("Background Size:", background_size)
-    print("Timecode Strategy:", timecode_strategy)
-
+def srt_insert_image(image_path: str, srt_path: str, position_height: int, output_path: str, scale_factor: float, background_size, timecode_strategy):
     # 加载字幕文件
     subtitles = pysrt.open(srt_path)
 
@@ -115,10 +85,38 @@ def main():
     # 保存透明图像为PNG格式
     cv2.imwrite(unicode_path(output_path), background)
 
-    # 显示结果图像
-    # cv2.imshow('Result', background)
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
+def main():
+    parser = argparse.ArgumentParser(description="Image Processing Script")
+    parser.add_argument("image_path", type=validate_image_path, help="path to the input PNG image")
+    parser.add_argument("srt_path", type=validate_srt_path, help="path to the input SRT file")
+    parser.add_argument("position_height", type=int, help="position height")
+    parser.add_argument("-o", "--output", default="out.png", help="output image path (default: out.png)")
+    parser.add_argument("-s", "--scale", type=float, default=1.0, help="image scaling factor")
+    parser.add_argument("-b", "--background-size", nargs=2, type=int, default=[1920, 1080],
+                        metavar=("WIDTH", "HEIGHT"), help="background image size (default: 1920x1080)")
+    parser.add_argument('-t', '--timecode_strategy', default='end', choices=['start', 'end', 'middle'], 
+                    help='timecode strategy, must be "start", "end" or "middle", default is "end"')
+    args = parser.parse_args()
+
+    # 从命令行参数中获取值
+    image_path = args.image_path
+    position_height = args.position_height
+    srt_path = args.srt_path
+    output_path = args.output
+    scale_factor = args.scale
+    background_size = tuple(args.background_size)
+    timecode_strategy = args.timecode_strategy
+
+    # 在这里执行你的图像处理逻辑和 SRT 文件处理逻辑
+    print("Image Path:", image_path)
+    print("Position Height:", position_height)
+    print("SRT Path:", srt_path)
+    print("Output Path:", output_path)
+    print("Scale Factor:", scale_factor)
+    print("Background Size:", background_size)
+    print("Timecode Strategy:", timecode_strategy)
+
+    srt_insert_image(image_path, srt_path, position_height, output_path, scale_factor, background_size, timecode_strategy)
 
 if __name__ == "__main__":
     main()
