@@ -57,8 +57,8 @@ def srt_insert_image(image_path: str, srt_path: str, position_height: int, outpu
     subtitles = pysrt.open(srt_path)
 
     # 加载图片
-    image_base = cv2.imread(unicode_path(image_path), cv2.IMREAD_UNCHANGED)
-    image = cv2.resize(image_base, None, fx=scale_factor, fy=scale_factor)
+    image = cv2.imdecode(np.fromfile(image_path, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
+    image = cv2.resize(image, None, fx=scale_factor, fy=scale_factor)
     print(f'image.shape = {image.shape}')
 
     # 创建空白背景图
@@ -83,7 +83,7 @@ def srt_insert_image(image_path: str, srt_path: str, position_height: int, outpu
         background = paste_image(background, image, int(bg_width * ratio), int(bg_height - position_height - image.shape[0]))
 
     # 保存透明图像为PNG格式
-    cv2.imwrite(unicode_path(output_path), background)
+    cv2.imencode('.png', background)[1].tofile(output_path)
 
 def main():
     parser = argparse.ArgumentParser(description="Image Processing Script")
