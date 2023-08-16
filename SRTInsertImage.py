@@ -12,6 +12,7 @@ def paste_image(background, image, x, y):
     image_height, image_width, _ = image.shape
     bg_height, bg_width, _ = background.shape
     x_offset = int(x - (image_width / 2))
+    print(f'x={x}, y={y}, image.shape={image.shape}')
 
     if x_offset < 0:
         image = image[:, abs(x_offset):]
@@ -31,6 +32,9 @@ def paste_image(background, image, x, y):
         image = image[:bg_height - y, :]
         image_height = bg_height - y
 
+    if image_height <= 0 or image_width <= 0:
+        return background
+    
     background[y:y+image_height, x_offset:x_offset+image_width] = image
     return background
 
@@ -48,7 +52,7 @@ def validate_srt_path(path):
         raise argparse.ArgumentTypeError("Invalid SRT file format: only SRT files are supported")
     return path
 
-def srt_insert_image(image_path: str, srt_path: str, position_height: int, output_path: str, scale_factor: float, background_size, timecode_strategy):
+def srt_insert_image(image_path: str, srt_path: str, position_height: int, output_path: str, scale_factor: float, background_size, timecode_strategy, auto_raised_height: int):
     # 加载字幕文件
     subtitles = pysrt.open(srt_path)
 
@@ -65,7 +69,7 @@ def srt_insert_image(image_path: str, srt_path: str, position_height: int, outpu
 
     total_time = subtitles[-1].end.to_time()
     last_locate = None
-    auto_raised_height : int = 60
+    # auto_raised_height : int = 60
 
     # 解析字幕数据
     for subtitle in subtitles:
@@ -107,6 +111,7 @@ def main():
     parser.add_argument("position_height", type=int, help="position height")
     parser.add_argument("-o", "--output", default="out.png", help="output image path (default: out.png)")
     parser.add_argument("-s", "--scale", type=float, default=1.0, help="image scaling factor")
+    parser.add_argument("-a", "--auto_raised_height", type=int, default=30, help="auto raised height")
     parser.add_argument("-b", "--background-size", nargs=2, type=int, default=[1920, 1080],
                         metavar=("WIDTH", "HEIGHT"), help="background image size (default: 1920x1080)")
     parser.add_argument('-t', '--timecode_strategy', default='end', choices=['start', 'end', 'middle'], 
@@ -119,6 +124,7 @@ def main():
     srt_path = args.srt_path
     output_path = args.output
     scale_factor = args.scale
+    auto_raised_height = args.auto_raised_height
     background_size = tuple(args.background_size)
     timecode_strategy = args.timecode_strategy
 
@@ -127,10 +133,11 @@ def main():
     print("SRT Path:", srt_path)
     print("Output Path:", output_path)
     print("Scale Factor:", scale_factor)
+    print("Auto Raised Height:", auto_raised_height)
     print("Background Size:", background_size)
     print("Timecode Strategy:", timecode_strategy)
 
-    srt_insert_image(image_path, srt_path, position_height, output_path, scale_factor, background_size, timecode_strategy)
+    srt_insert_image(image_path, srt_path, position_height, output_path, scale_factor, background_size, timecode_strategy, auto_raised_height)
 
 if __name__ == "__main__":
     main()

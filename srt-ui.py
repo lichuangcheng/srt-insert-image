@@ -10,7 +10,7 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         self.setWindowTitle("SRT Insert Image")
-        self.setGeometry(100, 100, 450, 300)
+        self.setGeometry(100, 100, 450, 320)
 
         # 图片路径
         self.image_label = QLabel("输入图片路径:", self)
@@ -77,9 +77,17 @@ class MainWindow(QMainWindow):
         self.timecode_combobox.addItems(["start", "end", "middle"])
         self.timecode_combobox.setCurrentText("end")  # 设置默认选项为'end'
 
+        # 自动升高高度
+        self.auto_raised_height_label = QLabel("自动升高高度:", self)
+        self.auto_raised_height_label.move(20, 230)
+        self.auto_raised_height_input = QLineEdit(self)
+        self.auto_raised_height_input.setGeometry(150, 230, 200, 20)
+        self.auto_raised_height_input.setValidator(QIntValidator(-999999, 999999, self))  # 只允许输入非负整数
+        self.auto_raised_height_input.setText('0')
+
         # 开始按钮
         self.start_button = QPushButton("开始", self)
-        self.start_button.setGeometry(150, 240, 80, 30)
+        self.start_button.setGeometry(150, 270, 80, 30)
         self.start_button.clicked.connect(self.start_processing)
 
         # 恢复用户输入的历史记录
@@ -124,6 +132,7 @@ class MainWindow(QMainWindow):
         background_height = int(self.background_input_height.text())
         background_size = (background_width, background_height)
         timecode_strategy = self.timecode_combobox.currentText()
+        auto_raised_height = int(self.auto_raised_height_input.text())
 
         # 检查参数的有效性
         if not image_path:
@@ -146,7 +155,7 @@ class MainWindow(QMainWindow):
         print("Background Size:", background_size)
         print("Timecode Strategy:", timecode_strategy)
 
-        SRTInsertImage.srt_insert_image(image_path, srt_path, position_height, output_path, scale_factor, background_size, timecode_strategy)
+        SRTInsertImage.srt_insert_image(image_path, srt_path, position_height, output_path, scale_factor, background_size, timecode_strategy, auto_raised_height)
         # 保存用户输入的路径到应用程序设置
         settings = QSettings("licc", "srt-insert-image-ui")
         settings.setValue("image_path", image_path)
