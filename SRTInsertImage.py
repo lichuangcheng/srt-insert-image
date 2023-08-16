@@ -4,10 +4,6 @@ import cv2
 import numpy as np
 import pysrt
 
-def unicode_path(image_path):
-    file_path_gbk = image_path.encode('gbk')        # unicode转gbk，字符串变为字节数组
-    return file_path_gbk.decode()
-
 def timecode(time):
     return time.hour * 3600 + time.minute * 60 + time.second + time.microsecond / 1000000
 
@@ -62,7 +58,7 @@ def srt_insert_image(image_path: str, srt_path: str, position_height: int, outpu
     print(f'image.shape = {image.shape}')
 
     # 创建空白背景图
-    background = np.zeros((background_size[1], background_size[0], 4), dtype=np.uint8)  # 1080P大小
+    background = np.zeros((background_size[1], background_size[0], 4), dtype=np.uint8)
 
     total_time = subtitles[-1].end.to_time()
 
@@ -107,7 +103,6 @@ def main():
     background_size = tuple(args.background_size)
     timecode_strategy = args.timecode_strategy
 
-    # 在这里执行你的图像处理逻辑和 SRT 文件处理逻辑
     print("Image Path:", image_path)
     print("Position Height:", position_height)
     print("SRT Path:", srt_path)

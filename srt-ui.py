@@ -1,6 +1,5 @@
 import sys
 from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QLineEdit, QPushButton, QFileDialog, QMessageBox, QComboBox, QDoubleSpinBox
-from PySide6.QtCore import Qt
 from PySide6.QtCore import QSettings
 from PySide6.QtGui import QIntValidator
 
@@ -10,7 +9,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.setWindowTitle("Image Processing")
+        self.setWindowTitle("SRT Insert Image")
         self.setGeometry(100, 100, 450, 300)
 
         # 图片路径
@@ -27,7 +26,7 @@ class MainWindow(QMainWindow):
         self.position_label.move(20, 50)
         self.position_input = QLineEdit(self)
         self.position_input.setGeometry(150, 50, 200, 20)
-        self.position_input.setValidator(QIntValidator(0, 999999, self))  # 只允许输入非负整数
+        self.position_input.setValidator(QIntValidator(-999999, 999999, self))  # 只允许输入非负整数
         self.position_input.setText('0')
 
         # SRT文件路径
@@ -53,8 +52,8 @@ class MainWindow(QMainWindow):
         self.scale_label.move(20, 140)
         self.scale_input = QDoubleSpinBox(self)
         self.scale_input.setGeometry(150, 140, 200, 20)
-        self.scale_input.setRange(0.1, 10.0)
-        self.scale_input.setSingleStep(0.1)
+        self.scale_input.setRange(0.001, 1000.0)
+        self.scale_input.setSingleStep(0.25)
         self.scale_input.setValue(1.0)
 
         # 背景图片大小
@@ -110,10 +109,9 @@ class MainWindow(QMainWindow):
             self.srt_input.setText(file_path)
 
     def browse_output(self):
-        outfile = QFileDialog.getSaveFileName(self, "Save File", "D:/Sources/srt-insert-image", "Images (*.png)")
-        if outfile:
-            print(outfile)
-            self.output_input.setText(outfile[0])
+        filename, _ = QFileDialog.getSaveFileName(self, "Save File", "", "Images (*.png)")
+        if len(filename) > 0:
+            self.output_input.setText(filename)
 
     def start_processing(self):
         # 从 UI 获取相应参数值
@@ -127,8 +125,6 @@ class MainWindow(QMainWindow):
         background_size = (background_width, background_height)
         timecode_strategy = self.timecode_combobox.currentText()
 
-    # 执行图像处理逻辑，传递上述参数
-    # process_image(
         # 检查参数的有效性
         if not image_path:
             self.show_error_message("Please select an image.")
