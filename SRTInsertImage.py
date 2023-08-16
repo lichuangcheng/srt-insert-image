@@ -55,12 +55,17 @@ def srt_insert_image(image_path: str, srt_path: str, position_height: int, outpu
     # 加载图片
     image = cv2.imdecode(np.fromfile(image_path, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
     image = cv2.resize(image, None, fx=scale_factor, fy=scale_factor)
+    img_h, img_w, _ = image.shape
+
     print(f'image.shape = {image.shape}')
 
     # 创建空白背景图
     background = np.zeros((background_size[1], background_size[0], 4), dtype=np.uint8)
+    bg_height, bg_width, _ = background.shape
 
     total_time = subtitles[-1].end.to_time()
+    last_locate = None
+    auto_raised_height : int = 60
 
     # 解析字幕数据
     for subtitle in subtitles:
@@ -73,10 +78,24 @@ def srt_insert_image(image_path: str, srt_path: str, position_height: int, outpu
             ratio = start_time / timecode(total_time)
         elif timecode_strategy == 'middle':
             ratio = (start_time + duration/2) / timecode(total_time)
-            
+        
+        x = int(bg_width * ratio)
+        y = int(bg_height - position_height - img_h)
+        if last_locate is None:
+            last_locate = (x, y)
+        else:
+            if x < last_locate[0] + img_w:
+                if y == last_locate[1]:
+                    y = y - auto_raised_height
+                elif y < last_locate[1]:
+                    pass
+                elif y > last_locate[1]:
+                    y = last_locate[1] - auto_raised_height
+
+            last_locate = (x, y)
+
         # 粘贴图片到背景图上
-        bg_height, bg_width, _ = background.shape
-        background = paste_image(background, image, int(bg_width * ratio), int(bg_height - position_height - image.shape[0]))
+        background = paste_image(background, image, x, y)
 
     # 保存透明图像为PNG格式
     cv2.imencode('.png', background)[1].tofile(output_path)
