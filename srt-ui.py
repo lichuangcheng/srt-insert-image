@@ -1,7 +1,10 @@
 import sys
-from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QLineEdit, QPushButton, QFileDialog, QMessageBox, QComboBox, QDoubleSpinBox
+from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QLineEdit, QPushButton, QFileDialog, QMessageBox, QComboBox, QDoubleSpinBox, QDateTimeEdit
 from PySide6.QtCore import QSettings
+from PySide6.QtCore import QTime, QDateTime
 from PySide6.QtGui import QIntValidator
+from PySide6.QtGui import QRegularExpressionValidator
+from PySide6.QtCore import QRegularExpression
 
 import SRTInsertImage
 
@@ -10,7 +13,7 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         self.setWindowTitle("SRT Insert Image")
-        self.setGeometry(100, 100, 450, 320)
+        self.setGeometry(100, 100, 450, 340)
 
         # 图片路径
         self.image_label = QLabel("输入图片路径:", self)
@@ -85,9 +88,17 @@ class MainWindow(QMainWindow):
         self.auto_raised_height_input.setValidator(QIntValidator(-999999, 999999, self))  # 只允许输入非负整数
         self.auto_raised_height_input.setText('0')
 
+        # 总时间
+        self.total_time_label = QLabel("总时长(时:分:秒.毫秒):", self)
+        self.total_time_label.move(20, 260)
+        self.total_time_input = QDateTimeEdit(self)
+        self.total_time_input.setGeometry(150, 260, 200, 20)
+        self.total_time_input.setDisplayFormat("hh:mm:ss.zzz")
+        self.total_time_input.setDateTime(QDateTime())
+
         # 开始按钮
         self.start_button = QPushButton("开始", self)
-        self.start_button.setGeometry(150, 270, 80, 30)
+        self.start_button.setGeometry(150, 300, 80, 30)
         self.start_button.clicked.connect(self.start_processing)
 
         # 恢复用户输入的历史记录
@@ -133,6 +144,7 @@ class MainWindow(QMainWindow):
         background_size = (background_width, background_height)
         timecode_strategy = self.timecode_combobox.currentText()
         auto_raised_height = int(self.auto_raised_height_input.text())
+        # time = QTime.fromString(self.total_time_input.text(), "h:mm:ss.zzz")
 
         # 检查参数的有效性
         if not image_path:
@@ -154,8 +166,13 @@ class MainWindow(QMainWindow):
         print("Scale Factor:", scale_factor)
         print("Background Size:", background_size)
         print("Timecode Strategy:", timecode_strategy)
+        seconds = self.total_time_input.dateTime().time().msecsSinceStartOfDay() / 1000
+        print("转换为秒数：", seconds)
 
-        SRTInsertImage.srt_insert_image(image_path, srt_path, position_height, output_path, scale_factor, background_size, timecode_strategy, auto_raised_height)
+        if seconds == 0.0:
+            seconds = None
+            
+        SRTInsertImage.srt_insert_image(image_path, srt_path, position_height, output_path, scale_factor, background_size, timecode_strategy, auto_raised_height, seconds)
         # 保存用户输入的路径到应用程序设置
         settings = QSettings("licc", "srt-insert-image-ui")
         settings.setValue("image_path", image_path)

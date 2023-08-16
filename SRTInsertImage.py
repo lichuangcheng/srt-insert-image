@@ -52,7 +52,16 @@ def validate_srt_path(path):
         raise argparse.ArgumentTypeError("Invalid SRT file format: only SRT files are supported")
     return path
 
-def srt_insert_image(image_path: str, srt_path: str, position_height: int, output_path: str, scale_factor: float, background_size, timecode_strategy, auto_raised_height: int):
+def srt_insert_image(image_path: str, 
+                     srt_path: str, 
+                     position_height: int, 
+                     output_path: str, 
+                     scale_factor: float, 
+                     background_size, 
+                     timecode_strategy, 
+                     auto_raised_height: int,
+                     total_time = None
+                     ):
     # 加载字幕文件
     subtitles = pysrt.open(srt_path)
 
@@ -67,9 +76,9 @@ def srt_insert_image(image_path: str, srt_path: str, position_height: int, outpu
     background = np.zeros((background_size[1], background_size[0], 4), dtype=np.uint8)
     bg_height, bg_width, _ = background.shape
 
-    total_time = subtitles[-1].end.to_time()
+    if total_time is None:
+        total_time = timecode(subtitles[-1].end.to_time())
     last_locate = None
-    # auto_raised_height : int = 60
 
     # 解析字幕数据
     for subtitle in subtitles:
@@ -77,11 +86,11 @@ def srt_insert_image(image_path: str, srt_path: str, position_height: int, outpu
         end_time = timecode(subtitle.end.to_time())
         duration = timecode((subtitle.end - subtitle.start).to_time())
 
-        ratio = end_time / timecode(total_time)
+        ratio = end_time / (total_time)
         if timecode_strategy == 'start':
-            ratio = start_time / timecode(total_time)
+            ratio = start_time / (total_time)
         elif timecode_strategy == 'middle':
-            ratio = (start_time + duration/2) / timecode(total_time)
+            ratio = (start_time + duration/2) / (total_time)
         
         x = int(bg_width * ratio)
         y = int(bg_height - position_height - img_h)
