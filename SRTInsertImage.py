@@ -35,7 +35,13 @@ def paste_image(background, image, x, y):
     if image_height <= 0 or image_width <= 0:
         return background
     
-    background[y:y+image_height, x_offset:x_offset+image_width] = image
+    # 用布尔索引选择需要更新的像素坐标
+    inds = np.where(image[:,:,3]>0) 
+    i,j = inds[0]+y, inds[1]+x_offset
+
+    # 用数组直接更新
+    background[i,j,0:3] = image[inds[0],inds[1],0:3] 
+    background[i,j,3] = image[inds[0],inds[1],3]
     return background
 
 def validate_image_path(path):
